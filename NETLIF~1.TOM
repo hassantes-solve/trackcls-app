@@ -1,0 +1,5 @@
+# TrackCLS is a single self-contained index.html (compiles in the browser).
+# No build step — Netlify just serves the file, like a plain static site.
+[build]
+  command = "echo no build needed"
+  publish = "."

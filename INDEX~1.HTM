@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b3d2e"/>
+<title>AfriTrack TrackCLS</title>
+<style>
+:root {
+  --green: #0b3d2e;
+  --green-2: #14634a;
+  --accent: #f5b301;
+  --bg: #f4f6f5;
+  --card: #ffffff;
+  --line: #e3e8e5;
+  --text: #16211d;
+  --muted: #6b7a73;
+  --danger: #c0392b;
+  --ok: #1e8e5a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+.center { display:flex; align-items:center; justify-content:center; min-height:60vh; }
+.muted { color: var(--muted); }
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display:flex; align-items:center; justify-content:space-between; padding: 10px 16px; background: var(--green); color:#fff; }
+.brand-mark { font-weight: 800; letter-spacing:.5px; }
+.brand-sub { margin-left:8px; padding:2px 8px; background: var(--accent); color:#3a2c00; border-radius: 6px; font-size:12px; font-weight:700; }
+.who { display:flex; align-items:center; gap:12px; font-size: 14px; }
+.who-role { opacity:.8; font-size:12px; }
+.who .link, .link { background:none; border:none; color:#fff; cursor:pointer; text-decoration:underline; font-size:13px; }
+.body { display:flex; flex:1; }
+.side { width: 210px; background: var(--card); border-right:1px solid var(--line); padding:12px 8px; display:flex; flex-direction:column; gap:2px; }
+.side a { padding:10px 12px; border-radius:8px; color:var(--text); text-decoration:none; font-size:14px; }
+.side a:hover { background:#eef2f0; }
+.side a.active { background: var(--green); color:#fff; }
+.content { flex:1; padding: 20px; max-width: 1000px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 20px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.card { background: var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+.grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:12px; }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.stat .n { font-size:26px; font-weight:800; }
+.stat .l { color:var(--muted); font-size:13px; }
+label { display:block; font-size:13px; margin:10px 0 4px; color:var(--muted); }
+input, select, textarea { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff; }
+.row { display:flex; gap:12px; flex-wrap:wrap; }
+.row > div { flex:1; min-width: 180px; }
+button.btn { background: var(--green); color:#fff; border:none; padding:11px 18px; border-radius:9px; font-weight:600; cursor:pointer; font-size:14px; }
+button.btn.alt { background: var(--accent); color:#3a2c00; }
+button.btn:disabled { opacity:.5; cursor:not-allowed; }
+button.ghost { background:#fff; border:1px solid var(--line); color:var(--text); padding:9px 14px; border-radius:8px; cursor:pointer; }
+table { width:100%; border-collapse: collapse; font-size:14px; }
+th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); }
+th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:12px; font-weight:600; }
+.b-active,.b-completed { background:#e3f5ec; color:var(--ok); }
+.b-suspended,.b-overdue { background:#fdecea; color:var(--danger); }
+.b-started,.b-in_transit,.b-arrived,.b-pending_input { background:#fff5da; color:#8a6d00; }
+.err { color: var(--danger); font-size: 14px; margin: 8px 0; }
+.ok { color: var(--ok); font-size: 14px; margin: 8px 0; }
+.video-wrap { position:relative; background:#000; border-radius:10px; overflow:hidden; }
+video { width:100%; display:block; }
+.qr-box { max-width: 360px; }
+.step { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; background:#fff; }
+.step .num { width:26px; height:26px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.step.done .num { background: var(--ok); }
+.thumb { width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line); }
+.confirm-q { display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
+.pill-yes { background:var(--ok); color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; }
+.pill-no { background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; }
+@media (max-width: 720px) {
+  .side { position:fixed; bottom:0; left:0; right:0; width:100%; flex-direction:row; overflow-x:auto; border-top:1px solid var(--line); z-index:20; }
+  .content { padding-bottom: 80px; }
+}
+
+.side .navitem{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 12px;border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;}
+.side .navitem:hover{background:#eef2f0;}
+.side .navitem.active{background:var(--green);color:#fff;}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+
+const { useState, useEffect, useRef, createContext, useContext } = React;
+const SUPABASE_URL = "https://ibaqfvvteqgdsqqhedqc.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wbBB8c7vmv2F2vI2XHYYXQ_f6AtgMMl";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+const NavContext = createContext(null);
+const useNav = () => useContext(NavContext);
+
+
+// ===== auth/AuthContext.jsx =====
+
+const AuthContext = createContext(null)
+const useAuth = () => useContext(AuthContext)
+
+function AuthProvider({ children }) {
+  const [session, setSession] = useState(null)
+  const [profile, setProfile] = useState(null) // row from public.users
+  const [loading, setLoading] = useState(true)
+
+  async function loadProfile(userId) {
+    if (!userId) { setProfile(null); return }
+    const { data } = await supabase
+      .from('users')
+      .select('id, role, customer_id, full_name, email, is_active')
+      .eq('id', userId)
+      .maybeSingle()
+    setProfile(data || null)
+  }
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      setSession(data.session)
+      await loadProfile(data.session?.user?.id)
+      setLoading(false)
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+      setSession(s)
+      await loadProfile(s?.user?.id)
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  const value = {
+    session,
+    user: session?.user ?? null,
+    profile,
+    role: profile?.role ?? null,
+    customerId: profile?.customer_id ?? null,
+    loading,
+    refreshProfile: () => loadProfile(session?.user?.id),
+    signOut: () => supabase.auth.signOut(),
+  }
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+// ===== lib/evidence.js =====
+
+// Uploads a captured photo to the private evidence bucket and records its metadata row.
+async function saveEvidence({ customerId, jobId, phase, subject, capture, operatorName }) {
+  const path = `${customerId}/${jobId}/${phase}-${subject}-${Date.now()}.jpg`
+  const { error: upErr } = await supabase.storage
+    .from('evidence')
+    .upload(path, capture.blob, { contentType: 'image/jpeg', upsert: true })
+  if (upErr) throw upErr
+
+  const { error: rowErr } = await supabase.from('job_photos').insert({
+    job_id: jobId, customer_id: customerId, phase, subject,
+    storage_path: path, device_time: capture.deviceTime, lat: capture.lat, lng: capture.lng,
+    operator_name: operatorName,
+  })
+  if (rowErr) throw rowErr
+  return path
+}
+
+// Finds or creates an asset (truck/trailer/container) for this customer, returns its id.
+async function ensureAsset(table, column, value, customerId) {
+  if (!value) return null
+  const { data: found } = await supabase.from(table).select('id').eq(column, value).eq('customer_id', customerId).maybeSingle()
+  if (found) return found.id
+  const { data: created, error } = await supabase.from(table).insert({ [column]: value, customer_id: customerId }).select('id').single()
+  if (error) throw error
+  return created.id
+}
+
+// ===== components/CameraCapture.jsx =====
+
+// Captures a photo, burns GPS + timestamp + job info onto the image,
+// and returns { blob, dataUrl, lat, lng, deviceTime }.
+function CameraCapture({ jobId, operatorName, onCapture, label }) {
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+  const [ready, setReady] = useState(false)
+  const [err, setErr] = useState('')
+  const [coords, setCoords] = useState(null)
+  const [shot, setShot] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    navigator.geolocation?.getCurrentPosition(
+      (p) => active && setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => active && setCoords(null),
+      { enableHighAccuracy: true, timeout: 8000 }
+    )
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then((stream) => {
+        if (!active) { stream.getTracks().forEach(t => t.stop()); return }
+        streamRef.current = stream
+        if (videoRef.current) { videoRef.current.srcObject = stream; setReady(true) }
+      })
+      .catch(() => setErr('Camera unavailable. Allow camera access, or use a device with a camera.'))
+    return () => { active = false; streamRef.current?.getTracks().forEach(t => t.stop()) }
+  }, [])
+
+  function capture() {
+    const v = videoRef.current
+    if (!v) return
+    const w = v.videoWidth || 720, h = v.videoHeight || 960
+    const c = document.createElement('canvas')
+    c.width = w; c.height = h
+    const ctx = c.getContext('2d')
+    ctx.drawImage(v, 0, 0, w, h)
+
+    const now = new Date()
+    const lines = [
+      `AfriTrack TrackCLS`,
+      `${now.toISOString().replace('T', ' ').slice(0, 19)} UTC`,
+      coords ? `GPS ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` : 'GPS unavailable',
+      `Job ${jobId ? jobId.slice(0, 8) : '—'}  ·  ${operatorName || ''}`,
+    ]
+    const pad = Math.round(w * 0.02)
+    const fs = Math.max(14, Math.round(w * 0.03))
+    ctx.font = `${fs}px monospace`
+    const boxH = lines.length * (fs + 6) + pad
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'
+    ctx.fillRect(0, h - boxH, w, boxH)
+    ctx.fillStyle = '#fff'
+    lines.forEach((t, i) => ctx.fillText(t, pad, h - boxH + pad + i * (fs + 6) + fs * 0.6))
+
+    c.toBlob((blob) => {
+      const dataUrl = c.toDataURL('image/jpeg', 0.85)
+      const payload = { blob, dataUrl, lat: coords?.lat ?? null, lng: coords?.lng ?? null, deviceTime: now.toISOString() }
+      setShot(dataUrl)
+      onCapture?.(payload)
+    }, 'image/jpeg', 0.85)
+  }
+
+  if (err) return <div className="err">{err}</div>
+
+  return (
+    <div>
+      {label && <label>{label}</label>}
+      {shot ? (
+        <div>
+          <img src={shot} alt="captured" style={{ width: '100%', borderRadius: 10 }} />
+          <button className="ghost" style={{ marginTop: 8 }} onClick={() => setShot(null)}>Retake</button>
+        </div>
+      ) : (
+        <div>
+          <div className="video-wrap"><video ref={videoRef} autoPlay playsInline muted /></div>
+          <button className="btn" style={{ marginTop: 8 }} disabled={!ready} onClick={capture}>
+            {ready ? 'Capture photo' : 'Starting camera…'}
+          </button>
+          <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+            {coords ? `GPS locked: ${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : 'Acquiring GPS…'}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ===== components/QrScanner.jsx =====
+
+// Scans a QR and returns the decoded text via onResult.
+// Includes a manual entry fallback for damaged stickers.
+function QrScanner({ onResult }) {
+  const elId = useRef('qr-' + Math.random().toString(36).slice(2))
+  const scannerRef = useRef(null)
+  const [err, setErr] = useState('')
+  const [manual, setManual] = useState('')
+
+  useEffect(() => {
+    const qr = new Html5Qrcode(elId.current)
+    scannerRef.current = qr
+    qr.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: 250 },
+      (text) => { stop(); onResult?.(text) },
+      () => {}
+    ).catch(() => setErr('Camera unavailable — use manual entry below.'))
+    return () => { stop() }
+    // eslint-disable-next-line
+  }, [])
+
+  function stop() {
+    const qr = scannerRef.current
+    if (qr && qr.isScanning) qr.stop().catch(() => {})
+  }
+
+  return (
+    <div className="qr-box">
+      <div id={elId.current} />
+      {err && <div className="err">{err}</div>}
+      <label>Or enter the lock code manually</label>
+      <div className="row">
+        <div><input value={manual} onChange={e => setManual(e.target.value)} placeholder="TRACKCLS-LOCK-…" /></div>
+        <button className="ghost" onClick={() => manual && onResult?.(manual.trim())}>Use code</button>
+      </div>
+    </div>
+  )
+}
+
+// ===== pages/Dashboard.jsx =====
+
+function Dashboard() {
+  const { role } = useAuth()
+  const [s, setS] = useState({ jobs: 0, active: 0, exceptions: 0, trips: 0, customers: 0, locks: 0, wallet: null })
+
+  useEffect(() => {
+    (async () => {
+      const active = ['pending_input', 'started', 'in_transit', 'arrived']
+      const [{ count: jobs }, { count: activeJobs }, { count: exceptions }, { count: trips }] = await Promise.all([
+        supabase.from('jobs').select('*', { count: 'exact', head: true }),
+        supabase.from('jobs').select('*', { count: 'exact', head: true }).in('state', active),
+        supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('has_exception', true),
+        supabase.from('jobs').select('*', { count: 'exact', head: true }).in('state', ['completed', 'billed']),
+      ])
+      let customers = 0, locks = 0, wallet = null
+      if (role === 'provider_admin') {
+        const [{ count: c }, { count: l }] = await Promise.all([
+          supabase.from('customers').select('*', { count: 'exact', head: true }),
+          supabase.from('locks').select('*', { count: 'exact', head: true }),
+        ])
+        customers = c; locks = l
+      } else {
+        const { data } = await supabase.from('wallets').select('balance, currency').maybeSingle()
+        wallet = data
+      }
+      setS({ jobs, active: activeJobs, exceptions, trips, customers, locks, wallet })
+    })()
+  }, [role])
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p className="sub">A read-only window over everything happening in TrackCLS.</p>
+      <div className="grid">
+        <Stat n={s.trips} l="Trips (completed)" />
+        <Stat n={s.active} l="Active jobs" />
+        <Stat n={s.jobs} l="Total jobs" />
+        <Stat n={s.exceptions} l="Exceptions flagged" />
+        {role === 'provider_admin'
+          ? (<><Stat n={s.customers} l="Customers" /><Stat n={s.locks} l="Locks registered" /></>)
+          : (s.wallet && <Stat n={`${Number(s.wallet.balance).toLocaleString()} ${s.wallet.currency}`} l="Wallet balance owed" />)}
+      </div>
+    </div>
+  )
+}
+function Stat({ n, l }) {
+  return <div className="stat"><div className="n">{n ?? 0}</div><div className="l">{l}</div></div>
+}
+
+// ===== pages/Wallet.jsx =====
+
+function Wallet() {
+  const [wallet, setWallet] = useState(null)
+  const [charges, setCharges] = useState([])
+  const [invoices, setInvoices] = useState([])
+
+  useEffect(() => {
+    (async () => {
+      const { data: w } = await supabase.from('wallets').select('*').maybeSingle()
+      setWallet(w)
+      const { data: c } = await supabase.from('charges').select('*').order('created_at', { ascending: false }).limit(50)
+      setCharges(c || [])
+      const { data: i } = await supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(20)
+      setInvoices(i || [])
+    })()
+  }, [])
+
+  return (
+    <div>
+      <h1>Wallet &amp; Billing</h1>
+      <p className="sub">Postpaid: charges accrue here and a monthly proforma clears the balance.</p>
+      {wallet && (
+        <div className="card">
+          <div className="stat" style={{ border: 'none', padding: 0 }}>
+            <div className="n">{Number(wallet.balance).toLocaleString()} {wallet.currency}</div>
+            <div className="l">Current balance owed this cycle</div>
+          </div>
+        </div>
+      )}
+      <h2>Recent charges</h2>
+      <div className="card">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>
+            {charges.map(c => (
+              <tr key={c.id}>
+                <td>{c.created_at?.slice(0, 10)}</td>
+                <td>{c.type}</td>
+                <td>{c.description}</td>
+                <td>{Number(c.amount).toLocaleString()} {c.currency}</td>
+              </tr>
+            ))}
+            {charges.length === 0 && <tr><td colSpan="4" className="muted">No charges yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <h2>Invoices</h2>
+      <div className="card">
+        <table>
+          <thead><tr><th>Period</th><th>Total</th><th>Status</th><th>Due</th></tr></thead>
+          <tbody>
+            {invoices.map(i => (
+              <tr key={i.id}>
+                <td>{i.period_start} → {i.period_end}</td>
+                <td>{Number(i.total).toLocaleString()} {i.currency}</td>
+                <td><span className={`badge b-${i.status}`}>{i.status}</span></td>
+                <td>{i.due_date || '—'}</td>
+              </tr>
+            ))}
+            {invoices.length === 0 && <tr><td colSpan="4" className="muted">No invoices raised yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ===== pages/Jobs.jsx =====
+
+const STATES = ['all', 'pending_input', 'started', 'in_transit', 'arrived', 'completed', 'billed']
+
+function Jobs() {
+  const [jobs, setJobs] = useState([])
+  const [filter, setFilter] = useState('all')
+  const [detail, setDetail] = useState(null)
+
+  useEffect(() => {
+    (async () => {
+      let q = supabase.from('jobs')
+        .select('id, state, created_at, sealed_at, unsealed_at, has_exception, lock_id, container_id, containers(container_code), locks(label)')
+        .order('created_at', { ascending: false }).limit(100)
+      if (filter !== 'all') q = q.eq('state', filter)
+      const { data } = await q
+      setJobs(data || [])
+    })()
+  }, [filter])
+
+  async function openJob(id) {
+    const { data } = await supabase.from('job_photos').select('*').eq('job_id', id).order('created_at')
+    const job = jobs.find(j => j.id === id)
+    setDetail({ job, photos: data || [] })
+  }
+
+  return (
+    <div>
+      <h1>Jobs &amp; Trips</h1>
+      <p className="sub">Every seal-to-unseal journey. A completed job counts as one trip.</p>
+      <div className="row" style={{ marginBottom: 12 }}>
+        <div style={{ maxWidth: 220 }}>
+          <select value={filter} onChange={e => setFilter(e.target.value)}>
+            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="card">
+        <table>
+          <thead><tr><th>Job</th><th>Lock</th><th>Container</th><th>State</th><th>Sealed</th><th>Unsealed</th><th></th></tr></thead>
+          <tbody>
+            {jobs.map(j => (
+              <tr key={j.id}>
+                <td>{j.id.slice(0, 8)}{j.has_exception && <span className="badge b-overdue" style={{ marginLeft: 6 }}>exception</span>}</td>
+                <td>{j.locks?.label || j.lock_id?.slice(0, 8)}</td>
+                <td>{j.containers?.container_code || '—'}</td>
+                <td><span className={`badge b-${j.state}`}>{j.state}</span></td>
+                <td>{j.sealed_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
+                <td>{j.unsealed_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
+                <td><button className="ghost" onClick={() => openJob(j.id)}>View</button></td>
+              </tr>
+            ))}
+            {jobs.length === 0 && <tr><td colSpan="7" className="muted">No jobs match this filter.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      {detail && (
+        <div className="card">
+          <h2>Job {detail.job.id.slice(0, 8)} — evidence</h2>
+          <div className="row">
+            {detail.photos.map(p => (
+              <div key={p.id} style={{ maxWidth: 160 }}>
+                <PhotoThumb path={p.storage_path} />
+                <div className="muted" style={{ fontSize: 11 }}>{p.phase}/{p.subject}<br />{p.lat ? `${Number(p.lat).toFixed(4)}, ${Number(p.lng).toFixed(4)}` : 'no GPS'}</div>
+              </div>
+            ))}
+            {detail.photos.length === 0 && <div className="muted">No photos on this job.</div>}
+          </div>
+          <button className="ghost" style={{ marginTop: 10 }} onClick={() => setDetail(null)}>Close</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PhotoThumb({ path }) {
+  const [url, setUrl] = useState(null)
+  useEffect(() => {
+    supabase.storage.from('evidence').createSignedUrl(path, 600).then(({ data }) => setUrl(data?.signedUrl))
+  }, [path])
+  return url ? <img src={url} className="thumb" style={{ width: '100%', height: 120 }} alt="evidence" /> : <div className="thumb" style={{ width: '100%', height: 120 }} />
+}
+
+// ===== pages/Locks.jsx =====
+
+function Locks() {
+  const [locks, setLocks] = useState([])
+  const [customers, setCustomers] = useState([])
+  const [label, setLabel] = useState('')
+  const [count, setCount] = useState(1)
+  const [customerId, setCustomerId] = useState('')
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false)
+
+  async function load() {
+    const { data } = await supabase.from('locks')
+      .select('id, label, qr_payload, state, customer_id, customers(legal_name)')
+      .order('created_at', { ascending: false })
+    setLocks(data || [])
+  }
+  useEffect(() => {
+    load()
+    supabase.from('customers').select('id, legal_name').then(({ data }) => setCustomers(data || []))
+  }, [])
+
+  async function register(e) {
+    e.preventDefault(); setErr(''); setBusy(true)
+    const rows = Array.from({ length: Number(count) }, (_, i) => ({
+      label: Number(count) > 1 ? `${label}-${i + 1}` : label,
+      customer_id: customerId || null,
+    }))
+    const { error } = await supabase.from('locks').insert(rows)
+    setBusy(false)
+    if (error) setErr(error.message); else { setLabel(''); setCount(1); load() }
+  }
+
+  return (
+    <div>
+      <h1>Locks &amp; QR</h1>
+      <p className="sub">Register a physical lock; the system generates the QR you print as a sticker.</p>
+      <form onSubmit={register} className="card">
+        <div className="row">
+          <div><label>Label / prefix</label><input value={label} onChange={e => setLabel(e.target.value)} required placeholder="LOCK-A" /></div>
+          <div><label>How many</label><input type="number" min="1" max="50" value={count} onChange={e => setCount(e.target.value)} /></div>
+          <div><label>Allocate to (optional)</label>
+            <select value={customerId} onChange={e => setCustomerId(e.target.value)}>
+              <option value="">— Unallocated —</option>
+              {customers.map(c => <option key={c.id} value={c.id}>{c.legal_name}</option>)}
+            </select>
+          </div>
+        </div>
+        {err && <div className="err">{err}</div>}
+        <button className="btn" disabled={busy}>{busy ? 'Registering…' : 'Register lock(s)'}</button>
+      </form>
+
+      <div className="grid">
+        {locks.map(l => <LockCard key={l.id} lock={l} />)}
+      </div>
+    </div>
+  )
+}
+
+function LockCard({ lock }) {
+  const canvasRef = useRef(null)
+  useEffect(() => {
+    if (canvasRef.current && lock.qr_payload) {
+      QRCode.toCanvas(canvasRef.current, lock.qr_payload, { width: 150, margin: 1 })
+    }
+  }, [lock.qr_payload])
+
+  function printSticker() {
+    const url = canvasRef.current.toDataURL()
+    const w = window.open('', '_blank')
+    w.document.write(`<div style="text-align:center;font-family:sans-serif">
+      <h3>AfriTrack TrackCLS</h3><img src="${url}"/><p>${lock.label}</p></div>`)
+    w.document.close(); w.print()
+  }
+
+  return (
+    <div className="stat" style={{ textAlign: 'center' }}>
+      <canvas ref={canvasRef} />
+      <div style={{ fontWeight: 700 }}>{lock.label}</div>
+      <div className="muted" style={{ fontSize: 12 }}>{lock.customers?.legal_name || 'Unallocated'}</div>
+      <span className={`badge b-${lock.state === 'available' ? 'active' : lock.state}`}>{lock.state}</span>
+      <div><button className="ghost" style={{ marginTop: 8 }} onClick={printSticker}>Print sticker</button></div>
+    </div>
+  )
+}
+
+// ===== pages/TeamUsers.jsx =====
+
+function TeamUsers() {
+  const { role, customerId } = useAuth()
+  const [users, setUsers] = useState([])
+  const [f, setF] = useState({ full_name: '', email: '', role: 'operator' })
+  const [err, setErr] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false)
+
+  // customer_admin can create control_room + operator; provider_admin can also create customer_admin
+  const roleOptions = role === 'provider_admin'
+    ? ['customer_admin', 'control_room', 'operator']
+    : ['control_room', 'operator']
+
+  async function load() {
+    const { data } = await supabase.from('users')
+      .select('id, full_name, email, role, is_active').order('created_at', { ascending: false })
+    setUsers(data || [])
+  }
+  useEffect(() => { load() }, [])
+
+  async function invite(e) {
+    e.preventDefault(); setErr(''); setMsg(''); setBusy(true)
+    const { data: sess } = await supabase.auth.getSession()
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/provision-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sess.session.access_token}` },
+      body: JSON.stringify({ email: f.email, full_name: f.full_name, role: f.role, customer_id: customerId }),
+    })
+    const out = await res.json().catch(() => ({}))
+    setBusy(false)
+    if (!res.ok) { setErr(out.error || 'Invite failed'); return }
+    setMsg(`Invite sent to ${f.email}.`); setF({ full_name: '', email: '', role: 'operator' }); load()
+  }
+
+  return (
+    <div>
+      <h1>Team</h1>
+      <p className="sub">Create control-room users and field operators. Each gets their own login and role.</p>
+      <form onSubmit={invite} className="card">
+        <div className="row">
+          <div><label>Full name</label><input value={f.full_name} onChange={e => setF({ ...f, full_name: e.target.value })} required /></div>
+          <div><label>Email</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required /></div>
+          <div><label>Role</label>
+            <select value={f.role} onChange={e => setF({ ...f, role: e.target.value })}>
+              {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+        </div>
+        {err && <div className="err">{err}</div>}
+        {msg && <div className="ok">{msg}</div>}
+        <button className="btn" disabled={busy}>{busy ? 'Sending…' : 'Send invite'}</button>
+      </form>
+
+      <div className="card">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.id}>
+                <td>{u.full_name || '—'}</td><td>{u.email}</td><td>{u.role}</td>
+                <td><span className={`badge b-${u.is_active ? 'active' : 'suspended'}`}>{u.is_active ? 'active' : 'inactive'}</span></td>
+              </tr>
+            ))}
+            {users.length === 0 && <tr><td colSpan="4" className="muted">No team members yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ===== pages/Seal.jsx =====
+
+function Seal() {
+  const { customerId, profile } = useAuth()
+  const opName = profile?.full_name || profile?.email
+  const [step, setStep] = useState(0)
+  const [lock, setLock] = useState(null)
+  const [jobId, setJobId] = useState(null)
+  const [trailer, setTrailer] = useState('')
+  const [truck, setTruck] = useState('')
+  const [container, setContainer] = useState('')
+  const [caps, setCaps] = useState({})
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false)
+
+  if (!customerId) return <div className="card muted">Sealing is done by a customer’s field team. Sign in with an operator account tied to a customer.</div>
+
+  async function onScan(text) {
+    setErr('')
+    const { data: l, error } = await supabase.from('locks').select('*').eq('qr_payload', text).maybeSingle()
+    if (error || !l) { setErr('Lock not found or not allocated to your account.'); return }
+    if (l.state === 'sealed') { setErr('This lock is already sealed on another job.'); return }
+    const { data: job, error: jErr } = await supabase.from('jobs')
+      .insert({ customer_id: customerId, lock_id: l.id, sealed_by: profile.id, state: 'pending_input' })
+      .select().single()
+    if (jErr) { setErr(jErr.message); return }
+    setLock(l); setJobId(job.id); setStep(1)
+  }
+
+  async function saveShot(subject, capture) {
+    try { await saveEvidence({ customerId, jobId, phase: 'seal', subject, capture, operatorName: opName }) }
+    catch (e) { setErr(e.message) }
+    setCaps(c => ({ ...c, [subject]: capture }))
+  }
+
+  async function submit() {
+    setErr(''); setBusy(true)
+    try {
+      const trailerId = await ensureAsset('trailers', 'plate_number', trailer, customerId)
+      const truckId = await ensureAsset('trucks', 'plate_number', truck, customerId)
+      const containerId = await ensureAsset('containers', 'container_code', container, customerId)
+      const seal = caps.lock
+      const { error } = await supabase.from('jobs').update({
+        trailer_id: trailerId, truck_id: truckId, container_id: containerId,
+        state: 'started', sealed_at: new Date().toISOString(),
+        seal_lat: seal?.lat ?? null, seal_lng: seal?.lng ?? null,
+      }).eq('id', jobId)
+      if (error) throw error
+      setDone(true)
+    } catch (e) { setErr(e.message) }
+    setBusy(false)
+  }
+
+  if (done) return (
+    <div className="card">
+      <h1>Sealed ✓</h1>
+      <p className="ok">Job {jobId.slice(0, 8)} is now <b>Started</b> — this timestamp and location are the trip’s official start.</p>
+      <button className="btn" onClick={() => window.location.reload()}>Seal another</button>
+    </div>
+  )
+
+  return (
+    <div>
+      <h1>Seal a container</h1>
+      <p className="sub">Scan the lock, then photograph each item. Every photo is stamped with GPS + time.</p>
+
+      {step === 0 && (
+        <div className="card"><h2>1 · Scan the lock QR</h2><QrScanner onResult={onScan} />{err && <div className="err">{err}</div>}</div>
+      )}
+
+      {step >= 1 && lock && (
+        <>
+          <div className="step done"><div className="num">✓</div><div>Lock <b>{lock.label}</b> identified — job opened.</div></div>
+
+          <div className="card"><h2>2 · Photograph the lock</h2>
+            <CameraCapture jobId={jobId} operatorName={opName} onCapture={c => saveShot('lock', c)} /></div>
+
+          <div className="card"><h2>3 · Trailer</h2>
+            <label>Trailer number</label>
+            <input value={trailer} onChange={e => setTrailer(e.target.value)} placeholder="T111 ABC" />
+            <CameraCapture jobId={jobId} operatorName={opName} onCapture={c => saveShot('trailer', c)} label="Photograph the trailer" /></div>
+
+          <div className="card"><h2>4 · Truck</h2>
+            <label>Truck number</label>
+            <input value={truck} onChange={e => setTruck(e.target.value)} placeholder="T222 ABC" />
+            <CameraCapture jobId={jobId} operatorName={opName} onCapture={c => saveShot('truck', c)} label="Photograph the truck" /></div>
+
+          <div className="card"><h2>5 · Container</h2>
+            <label>Container ID</label>
+            <input value={container} onChange={e => setContainer(e.target.value)} placeholder="CMU1234" />
+            <CameraCapture jobId={jobId} operatorName={opName} onCapture={c => saveShot('container', c)} label="Photograph the container ID" /></div>
+
+          {err && <div className="err">{err}</div>}
+          <button className="btn" disabled={busy || !caps.lock} onClick={submit}>
+            {busy ? 'Submitting…' : 'Submit & seal'}
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ===== pages/Unseal.jsx =====
+
+function Unseal() {
+  const { customerId, profile } = useAuth()
+  const opName = profile?.full_name || profile?.email
+  const [job, setJob] = useState(null)
+  const [checks, setChecks] = useState({})       // { trailer: true/false, ... }
+  const [caps, setCaps] = useState({})
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(null)
+
+  if (!customerId) return <div className="card muted">Unsealing is done by a customer’s field team. Sign in with an operator account.</div>
+
+  async function onScan(text) {
+    setErr('')
+    const { data: l } = await supabase.from('locks').select('id').eq('qr_payload', text).maybeSingle()
+    if (!l) { setErr('Lock not recognised.'); return }
+    const { data: j, error } = await supabase.from('jobs')
+      .select('*, trailers(plate_number), trucks(plate_number), containers(container_code)')
+      .eq('lock_id', l.id).in('state', ['started', 'in_transit', 'arrived'])
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (error || !j) { setErr('No active sealed job found for this lock.'); return }
+    // mark arrived
+    await supabase.from('jobs').update({ state: 'arrived' }).eq('id', j.id)
+    setJob(j)
+  }
+
+  const questions = job ? [
+    { key: 'trailer', label: `Is this lock on trailer ${job.trailers?.plate_number || '—'}?` },
+    { key: 'truck', label: `Is this lock on truck ${job.trucks?.plate_number || '—'}?` },
+    { key: 'container', label: `Is this container ${job.containers?.container_code || '—'}?` },
+  ] : []
+
+  async function saveShot(subject, capture) {
+    try { await saveEvidence({ customerId, jobId: job.id, phase: 'unseal', subject, capture, operatorName: opName }) }
+    catch (e) { setErr(e.message) }
+    setCaps(c => ({ ...c, [subject]: capture }))
+  }
+
+  async function complete() {
+    setErr(''); setBusy(true)
+    const mismatch = questions.some(q => checks[q.key] === false)
+    const notes = questions.filter(q => checks[q.key] === false).map(q => q.label).join('; ')
+    const seal = caps.lock
+    try {
+      const { error } = await supabase.from('jobs').update({
+        state: 'completed', unsealed_by: profile.id, unsealed_at: new Date().toISOString(),
+        unseal_lat: seal?.lat ?? null, unseal_lng: seal?.lng ?? null,
+        has_exception: mismatch, exception_notes: mismatch ? notes : null,
+      }).eq('id', job.id)
+      if (error) throw error
+      setDone({ mismatch })
+    } catch (e) { setErr(e.message) }
+    setBusy(false)
+  }
+
+  if (done) return (
+    <div className="card">
+      <h1>Completed ✓</h1>
+      <p className="ok">Trip counted and charges raised into the wallet.</p>
+      {done.mismatch && <p className="err">A mismatch was recorded as an exception for the control room to review.</p>}
+      <button className="btn" onClick={() => window.location.reload()}>Unseal another</button>
+    </div>
+  )
+
+  return (
+    <div>
+      <h1>Unseal a container</h1>
+      <p className="sub">Scan the lock, confirm what arrived matches what left, photograph, and unseal.</p>
+
+      {!job && <div className="card"><h2>1 · Scan the lock QR</h2><QrScanner onResult={onScan} />{err && <div className="err">{err}</div>}</div>}
+
+      {job && (
+        <>
+          <div className="step done"><div className="num">✓</div><div>Job {job.id.slice(0, 8)} pulled up — status <b>Arrived</b>.</div></div>
+
+          <div className="card"><h2>2 · Confirmation checks</h2>
+            {questions.map(q => (
+              <div className="confirm-q" key={q.key}>
+                <span>{q.label}</span>
+                <span>
+                  <button className="pill-yes" style={{ opacity: checks[q.key] === true ? 1 : .5 }}
+                    onClick={() => setChecks(c => ({ ...c, [q.key]: true }))}>✓ Match</button>{' '}
+                  <button className="pill-no" style={{ opacity: checks[q.key] === false ? 1 : .5 }}
+                    onClick={() => setChecks(c => ({ ...c, [q.key]: false }))}>✗ Mismatch</button>
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="card"><h2>3 · Re-photograph (proof it arrived intact)</h2>
+            <CameraCapture jobId={job.id} operatorName={opName} onCapture={c => saveShot('lock', c)} label="Lock" />
+            <CameraCapture jobId={job.id} operatorName={opName} onCapture={c => saveShot('trailer', c)} label="Trailer" />
+            <CameraCapture jobId={job.id} operatorName={opName} onCapture={c => saveShot('truck', c)} label="Truck" />
+            <CameraCapture jobId={job.id} operatorName={opName} onCapture={c => saveShot('container', c)} label="Container" />
+          </div>
+
+          {err && <div className="err">{err}</div>}
+          <button className="btn" disabled={busy || !caps.lock} onClick={complete}>
+            {busy ? 'Unsealing…' : 'Confirm & unseal'}
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ===== Customers =====
+
+function Customers() {
+  const { navigate } = useNav();
+  const [rows, setRows] = useState([])
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, legal_name, type, currency, credit_days, status, wallets(balance)')
+        .order('created_at', { ascending: false })
+      setRows(data || [])
+    })()
+  }, [])
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Customers</h1>
+        <button className="btn" onClick={() => navigate('addCustomer')}>+ Add customer</button>
+      </div>
+      <p className="sub">Each customer is an isolated tenant. Saving one creates its wallet and activates it.</p>
+      <div className="card">
+        <table>
+          <thead><tr><th>Legal name</th><th>Type</th><th>Currency</th><th>Credit days</th><th>Wallet</th><th>Status</th></tr></thead>
+          <tbody>
+            {rows.map(c => (
+              <tr key={c.id}>
+                <td>{c.legal_name}</td>
+                <td>{c.type}</td>
+                <td>{c.currency}</td>
+                <td>{c.credit_days}</td>
+                <td>{Number(c.wallets?.[0]?.balance ?? 0).toLocaleString()} {c.currency}</td>
+                <td><span className={`badge b-${c.status}`}>{c.status}</span></td>
+              </tr>
+            ))}
+            {rows.length === 0 && <tr><td colSpan="6" className="muted">No customers yet. Add your first.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ===== AddCustomer =====
+
+function AddCustomer() {
+  const { navigate } = useNav()
+  const [frameworks, setFrameworks] = useState([])
+  const [f, setF] = useState({
+    legal_name: '', type: 'mine', contact_person: '', contact_email: '', contact_phone: '',
+    billing_address: '', tax_number: '', currency: 'TZS', credit_days: 30, pricing_framework_id: '',
+    admin_name: '', admin_email: '',
+  })
+  const [err, setErr] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    supabase.from('pricing_frameworks').select('id, name, currency').then(({ data }) => {
+      setFrameworks(data || [])
+      if (data?.[0]) setF(v => ({ ...v, pricing_framework_id: data[0].id }))
+    })
+  }, [])
+
+  const set = (k) => (e) => setF(v => ({ ...v, [k]: e.target.value }))
+
+  async function submit(e) {
+    e.preventDefault(); setErr(''); setMsg(''); setBusy(true)
+    // 1. Create the customer anchor (wallet auto-initialises via trigger)
+    const { data: cust, error } = await supabase.from('customers').insert({
+      legal_name: f.legal_name, type: f.type, contact_person: f.contact_person,
+      contact_email: f.contact_email, contact_phone: f.contact_phone, billing_address: f.billing_address,
+      tax_number: f.tax_number, currency: f.currency, credit_days: Number(f.credit_days),
+      pricing_framework_id: f.pricing_framework_id || null,
+    }).select().single()
+    if (error) { setBusy(false); setErr(error.message); return }
+
+    // 2. Invite the first customer admin via the provision-user edge function
+    const { data: sess } = await supabase.auth.getSession()
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/provision-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sess.session.access_token}` },
+      body: JSON.stringify({ email: f.admin_email, full_name: f.admin_name, role: 'customer_admin', customer_id: cust.id }),
+    })
+    const out = await res.json().catch(() => ({}))
+    setBusy(false)
+    if (!res.ok) { setErr(`Customer saved, but inviting the admin failed: ${out.error || res.statusText}`); return }
+    setMsg('Customer created, wallet initialised, and an invite sent to the customer admin.')
+    setTimeout(() => navigate('customers'), 1200)
+  }
+
+  return (
+    <div>
+      <h1>Add customer</h1>
+      <p className="sub">Creates the anchor record, initialises the wallet at zero, and invites the first customer admin.</p>
+      <form onSubmit={submit}>
+        <div className="card">
+          <h2>Identity</h2>
+          <label>Legal name</label>
+          <input value={f.legal_name} onChange={set('legal_name')} required />
+          <div className="row">
+            <div><label>Type</label>
+              <select value={f.type} onChange={set('type')}>
+                <option value="mine">Mine</option>
+                <option value="cash_in_transit">Cash-in-transit</option>
+                <option value="logistics">Logistics</option>
+              </select>
+            </div>
+            <div><label>Contact person</label><input value={f.contact_person} onChange={set('contact_person')} /></div>
+          </div>
+          <div className="row">
+            <div><label>Contact email</label><input type="email" value={f.contact_email} onChange={set('contact_email')} /></div>
+            <div><label>Contact phone</label><input value={f.contact_phone} onChange={set('contact_phone')} /></div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2>Billing</h2>
+          <label>Billing address</label>
+          <textarea rows="2" value={f.billing_address} onChange={set('billing_address')} />
+          <div className="row">
+            <div><label>Tax number</label><input value={f.tax_number} onChange={set('tax_number')} /></div>
+            <div><label>Currency</label><input value={f.currency} onChange={set('currency')} /></div>
+            <div><label>Credit days</label><input type="number" value={f.credit_days} onChange={set('credit_days')} /></div>
+          </div>
+          <label>Pricing framework</label>
+          <select value={f.pricing_framework_id} onChange={set('pricing_framework_id')}>
+            {frameworks.map(fr => <option key={fr.id} value={fr.id}>{fr.name} ({fr.currency})</option>)}
+          </select>
+        </div>
+
+        <div className="card">
+          <h2>First user — customer admin</h2>
+          <div className="row">
+            <div><label>Admin name</label><input value={f.admin_name} onChange={set('admin_name')} required /></div>
+            <div><label>Admin email</label><input type="email" value={f.admin_email} onChange={set('admin_email')} required /></div>
+          </div>
+          <p className="muted" style={{ fontSize: 12 }}>They receive an AfriTrack-branded invite with a one-time link to set their own password.</p>
+        </div>
+
+        {err && <div className="err">{err}</div>}
+        {msg && <div className="ok">{msg}</div>}
+        <button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save customer & send invite'}</button>
+      </form>
+    </div>
+  )
+}
+
+// ===== Login =====
+function Login() {
+  const { session } = useAuth();
+  const [email,setEmail]=useState(''); const [password,setPassword]=useState('');
+  const [newPass,setNewPass]=useState(''); const [msg,setMsg]=useState(''); const [err,setErr]=useState(''); const [busy,setBusy]=useState(false);
+  async function signIn(e){ e.preventDefault(); setErr(''); setBusy(true); const {error}=await supabase.auth.signInWithPassword({email,password}); setBusy(false); if(error) setErr(error.message); }
+  async function setInitialPassword(e){ e.preventDefault(); setErr(''); setBusy(true); const {error}=await supabase.auth.updateUser({password:newPass}); setBusy(false); if(error) setErr(error.message); else { setMsg('Password set. Loading…'); setTimeout(()=>{ window.location.href = window.location.pathname; }, 900); } }
+  return (
+    <div className="center">
+      <div className="card" style={{ width: 360 }}>
+        <div className="brand" style={{ marginBottom: 8 }}>
+          <span className="brand-mark" style={{ color: 'var(--green)', fontSize: 22 }}>AfriTrack</span>
+          <span className="brand-sub">TrackCLS</span>
+        </div>
+        {session ? (
+          <form onSubmit={setInitialPassword}>
+            <p className="sub">Welcome. Set a password to finish activating your account.</p>
+            <label>New password</label>
+            <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} required minLength={8} />
+            {err && <div className="err">{err}</div>}
+            {msg && <div className="ok">{msg}</div>}
+            <button className="btn" style={{ marginTop: 12, width: '100%' }} disabled={busy}>Set password</button>
+          </form>
+        ) : (
+          <form onSubmit={signIn}>
+            <p className="sub">Sign in to your account.</p>
+            <label>Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <label>Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            {err && <div className="err">{err}</div>}
+            <button className="btn" style={{ marginTop: 12, width: '100%' }} disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ===== Layout =====
+const ROLE_LABEL = { provider_admin:'Provider Admin', customer_admin:'Customer Admin', control_room:'Control Room', operator:'Field Operator' };
+function Layout({ children }) {
+  const { role, profile, signOut } = useAuth();
+  const { route, navigate } = useNav();
+  const isProvider = role === 'provider_admin';
+  const isAdmin = role === 'provider_admin' || role === 'customer_admin';
+  const Item = (page,label)=> <button className={'navitem'+(route.page===page?' active':'')} onClick={()=>navigate(page)}>{label}</button>;
+  return (
+    <div className="app">
+      <header className="topbar">
+        <div className="brand"><span className="brand-mark">AfriTrack</span><span className="brand-sub">TrackCLS</span></div>
+        <div className="who">
+          <span className="who-name">{profile?.full_name || profile?.email}</span>
+          <span className="who-role">{ROLE_LABEL[role] || role}</span>
+          <button className="link" onClick={()=>signOut()}>Sign out</button>
+        </div>
+      </header>
+      <div className="body">
+        <nav className="side">
+          {Item('dashboard','Dashboard')}
+          {Item('jobs','Jobs & Trips')}
+          {Item('seal','Seal a container')}
+          {Item('unseal','Unseal a container')}
+          {isAdmin && Item('team','Team')}
+          {Item('wallet','Wallet & Billing')}
+          {isProvider && Item('customers','Customers')}
+          {isProvider && Item('locks','Locks & QR')}
+        </nav>
+        <main className="content">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+
+// ===== Router / Shell =====
+const PAGES = { dashboard: Dashboard, jobs: Jobs, seal: Seal, unseal: Unseal, team: TeamUsers, wallet: Wallet, customers: Customers, addCustomer: AddCustomer, locks: Locks };
+const ROLE_ACCESS = { team:['provider_admin','customer_admin'], customers:['provider_admin'], addCustomer:['provider_admin'], locks:['provider_admin'] };
+function AppRouter(){
+  const { role } = useAuth();
+  const [route,setRoute]=useState({page:'dashboard'});
+  const navigate=(page)=>setRoute({page});
+  let page = route.page;
+  const allow = ROLE_ACCESS[page];
+  if(allow && !allow.includes(role)) page='dashboard';
+  const Page = PAGES[page] || Dashboard;
+  return <NavContext.Provider value={{ route:{page}, navigate }}><Layout><Page/></Layout></NavContext.Provider>;
+}
+function Shell(){
+  const { session, loading } = useAuth();
+  const isRecovery = window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery');
+  if(loading) return <div className="center muted">Loading…</div>;
+  if(!session || isRecovery) return <Login/>;
+  return <AppRouter/>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<AuthProvider><Shell/></AuthProvider>);
+
+</script>
+</body>
+</html>
